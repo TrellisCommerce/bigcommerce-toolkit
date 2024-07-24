@@ -504,6 +504,77 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'}
                 ]
+            },
+            {
+                'command': 'custom-template-associations',
+                'endpoint': 'v3/storefront/custom-template-associations',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'add', 'method': 'PUT'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'}
+                ]
+            },
+            {
+                'command': 'themes',
+                'endpoint': 'v3/themes',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'upload', 'method': 'POST'}
+                ],
+                'subcommands': [
+                    {
+                        'command': 'custom-templates',
+                        'endpoint': 'v3/themes/custom-templates/{version_uuid}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True}
+                        ]
+                    },
+                    {
+                        'command': 'activate',
+                        'endpoint': 'v3/themes/actions/activate',
+                        'actions': [
+                            {'action': 'set', 'method': 'POST'}
+                        ]
+                    }
+                ]
+            },
+            {
+                'command': 'theme',
+                'endpoint': 'v3/themes/{uuid}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'delete', 'method': 'DELETE'}
+                ]
+            },
+            {
+                'command': 'channels',
+                'endpoint': 'v3/channels',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'add', 'method': 'POST'}
+                ]
+            },
+            {
+                'command': 'channel',
+                'endpoint': 'v3/channels/{channel_id}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'}
+                ],
+                'subcommands': [
+                    {
+                        'command': 'active-theme',
+                        'endpoint': 'v3/channels/{channel_id}/active-theme',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'}
+                        ]
+                    }
+                ]
             }
         ]
     }
