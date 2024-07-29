@@ -575,6 +575,39 @@ def main():
                         ]
                     }
                 ]
+            },
+            {
+                'command': 'blog-posts',
+                'endpoint': 'v2/blog/posts',
+                'actions': [
+                    {'action': 'get-all', 'method': 'GET'},
+                    {'action': 'add', 'method': 'POST'}
+                ],
+                'subcommands': [
+                    {
+                        'command': 'count',
+                        'endpoint': 'v2/blog/posts/count',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'}
+                        ]
+                    }
+                ]
+            },
+            {
+                'command': 'blog-post',
+                'endpoint': 'v2/blog/posts/{id}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'}
+                ]
+            },
+            {
+                'command': 'blog-tags',
+                'endpoint': 'v2/blog/tags',
+                'actions': [
+                    {'action': 'get-all', 'method': 'GET'}
+                ]
             }
         ]
     }
