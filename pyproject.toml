@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bigcommerce-toolkit"
-version = "0.1.6"
+version = "0.1.7"
 description = "A UNIX-style tool which provides easy access to BigCommerce's API from the command line."
 authors = ["Joey Hoer <me@joeyhoer.com>"]
 readme = "README.md"

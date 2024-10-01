@@ -452,8 +452,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
-                    {'action': 'create', 'method': 'POST'},
-                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'upsert', 'method': 'PUT'},
                     {'action': 'delete', 'method': 'DELETE'}
                 ]
             },

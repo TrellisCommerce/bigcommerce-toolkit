@@ -4,7 +4,7 @@ BigCommerce Toolkit is a command-line interface (CLI) tool for BigCommerce's API
 
 ## Features
 
-- **Resource-based Commands:** Commands are structured around resource types (e.g., products, categories, customers) and their respective actions (e.g., get, add, update, delete).
+- **Resource-based Commands:** Commands are structured around resource types (e.g., products, categories, customers) and their respective actions (e.g., get, create, update, delete).
 - **Hierarchical Command Structure:** Similar to UNIX tools like `git`, commands are grouped logically to align with BigCommerce's API structure.
 - **Environment Variable Support:** Store hash and authentication token can be set via environment variables for convenience.
 - **Paginated Requests:** Supports fetching all pages of data for GET requests with pagination.
@@ -45,20 +45,20 @@ bigc --store-hash your_store_hash --auth-token your_auth_token …
 
 ### Example Commands
 
-## Add a Product (via Arguments)
+## Create a Product (via Arguments)
 
-To add a new product with data provided as named arguments:
+To create a new product with data provided as named arguments:
 
 ```sh
-bigc products add --name "New Product" --price 19.99 --type physical --weight 0
+bigc products create --name "New Product" --price 19.99 --type physical --weight 0
 ```
 
-## Add a Product (via Standard Input)
+## Create a Product (via Standard Input)
 
 BigCommerce Toolkit also supports reading values from `stdin`, allowing for piping data between commands for easier scripting. For example:
 
 ```sh
-echo '{"name": "New Product", "price": 19.99, "type": "physical", "weight": 0}' | bigc products add --data -
+echo '{"name": "New Product", "price": 19.99, "type": "physical", "weight": 0}' | bigc products create --data -
 ```
 
 ### Update a Product
