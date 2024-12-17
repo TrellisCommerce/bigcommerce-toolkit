@@ -35,6 +35,15 @@ def construct_request_data(args, unknown_args):
     return data
 
 def make_paginated_request(url, headers, params):
+    """
+    Retrieves all pages of data from an API endpoint that supports pagination.
+
+    :param url: The API endpoint URL.
+    :param headers: HTTP headers to include in the request.
+    :param params: Query parameters to include in the request, excluding pagination parameters.
+     :return: A dictionary containing all retrieved data under the key "data". If an error
+             occurs during the request, the function returns the error response from the API.
+    """
     results = []
     page = 1
     while True:
@@ -49,52 +58,104 @@ def make_paginated_request(url, headers, params):
         page += 1
     return {"data": results}
 
-def make_request(method, endpoint, data=None, params=None, all_pages=False, store_hash=None, auth_token=None, files=None):
-    url = f'https://api.bigcommerce.com/stores/{store_hash}/{endpoint}'
-    headers = {
-        'X-Auth-Token': auth_token,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json' if not files else None
-    }
+def make_chunked_request(method, url, headers, data, limit):
+    """
+    Handles POST/PUT requests in chunks when the data array exceeds the limit.
 
-    if all_pages and method == 'GET':
-        return make_paginated_request(url, headers, params)
+    :param method: HTTP method (POST or PUT).
+    :param url: The API endpoint URL.
+    :param headers: HTTP headers to include in the request.
+    :param data: The data array to be sent.
+    :param limit: Maximum number of items per request.
+    :return: Combined response from all chunked requests.
+    """
+    if not isinstance(data, list):
+        raise ValueError("Data must be a list for chunked requests.")
+
+    combined_data = []  # To store all results from chunked requests
+
+    results = []
+    for i in range(0, len(data), limit):
+        chunk = data[i:i + limit]
+        chunk_response = requests.request(
+            method,
+            url,
+            headers=headers,
+            json=chunk
+        )
+        if chunk_response.status_code not in [200, 201]:
+            # Return the error response if any chunk fails
+            return chunk_response.json()
+
+        json_response = chunk_response.json()
+        results.extend(json_response.get('data', []))
+    return {"data": results}
+
+def make_request(config):
+    """
+    Perform an HTTP request with the given configuration.
+
+    :param config: Dictionary containing the request configuration.
+    :return: JSON response or error.
+    """
+    url = f"https://api.bigcommerce.com/stores/{config.get('store_hash')}/{config.get('endpoint')}"
+    headers = {
+        'X-Auth-Token': config.get('auth_token'),
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' if not config.get('files') else None
+    }
+    headers.update(config.get('headers', {}))  # Allow additional headers if needed
+
+    if config.get('all_pages') and config.get('method') == 'GET':
+        return make_paginated_request(url, headers, config.get('params', {}))
+
+    if config.get('limit') and config.get('method') in ['POST', 'PUT'] and isinstance(config.get('data'), list):
+        return make_chunked_request(config.get('method'), url, headers, config.get('data'), config.get('limit'))
 
     response = requests.request(
-        method,
+        config.get('method'),
         url,
         headers=headers,
-        json=None if files else data,  # Use 'json' parameter if not sending files
-        data=data if files else None,  # Use 'data' parameter when sending files
-        params=params,
-        files=files
+        json=None if config.get('files') else config.get('data'), # Use 'json' parameter if not sending files
+        data=config.get('data') if config.get('files') else None, # Use 'data' parameter when sending files
+        params=config.get('params'),
+        files=config.get('files')
     )
 
     if response.status_code in [200, 204]:
         return response.json() if response.content else {"status": response.status_code, "title": "No Content"}
     return response.json()
 
-def handle_request(endpoint, method, all_pages, multipart_parameter, request_data, store_hash, auth_token, verbose):
-    is_multipart = multipart_parameter and multipart_parameter in request_data
+def handle_request(config):
+    """
+    Handles constructing the request configuration and invoking make_request.
+
+    :param config: Dictionary containing request parameters and options.
+    :return: Response from make_request.
+    """
+    is_multipart = config.get('multipart_parameter') and config.get('multipart_parameter') in config.get('request_data')
 
     files = None
     if is_multipart:
-        files = {multipart_parameter: open(request_data.pop(multipart_parameter), 'rb')}
+        files = {config.get('multipart_parameter'): open(config.get('request_data').pop(config.get('multipart_parameter')), 'rb')}
 
-    if verbose:
-        print("Endpoint:", json.dumps(endpoint, indent=4), file=sys.stderr)
-        print("Request Data:", json.dumps(request_data, indent=4), file=sys.stderr)
+    if config.get('verbose'):
+        print("Endpoint:", json.dumps(config.get('endpoint'), indent=4), file=sys.stderr)
+        print("Request Data:", json.dumps(config.get('request_data'), indent=4), file=sys.stderr)
 
-    return make_request(
-        method,
-        endpoint,
-        data=request_data if method in ['POST', 'PUT'] else None,
-        params=request_data if method == 'GET' else None,
-        all_pages=all_pages,
-        store_hash=store_hash,
-        auth_token=auth_token,
-        files=files
-    )
+    # Build the request-specific config
+    request_config = {
+        'method': config.get('method'),
+        'endpoint': config.get('endpoint'),
+        'data': config.get('request_data') if config.get('method') in ['POST', 'PUT'] else None,
+        'params': config.get('request_data') if config.get('method') == 'GET' else None,
+        'all_pages': config.get('all_pages', False),
+        'store_hash': config.get('store_hash'),
+        'auth_token': config.get('auth_token'),
+        'files': files,
+        'limit': config.get('limit')
+    }
+    return make_request(request_config)
 
 class UnknownArgumentsCommand(click.Command):
     def format_options(self, ctx, formatter):
@@ -147,16 +208,18 @@ def add_action_commands(command_group, command_dict):
 
                 if endpoint_format:
                     endpoint = endpoint_format.format(**kwargs)
-                    response = handle_request(
-                        endpoint,
-                        action['method'],
-                        action.get('allPages', False),
-                        action.get('multipartParameter', None),
-                        request_data,
-                        ctx.obj['store_hash'],
-                        ctx.obj['auth_token'],
-                        ctx.obj.get('verbose', False)
-                    )
+                    config = {
+                        'endpoint': endpoint,
+                        'method': action['method'],
+                        'all_pages': action.get('allPages', False),
+                        'multipart_parameter': action.get('multipartParameter', None),
+                        'request_data': request_data,
+                        'store_hash': ctx.obj['store_hash'],
+                        'auth_token': ctx.obj['auth_token'],
+                        'verbose': ctx.obj.get('verbose', False),
+                        'limit': action.get('limit', None)
+                    }
+                    response = handle_request(config)
                     print(json.dumps(response, indent=4))
                 else:
                     print("An endpoint not defined for this command.", file=sys.stderr)
@@ -296,6 +359,23 @@ def main():
                             {'action': 'get-all', 'method': 'GET', 'allPages': True},
                             {'action': 'create', 'method': 'POST', 'multipartParamter': 'image_file'},
                         ]
+                    },
+                    {
+                        'command': 'option',
+                        'endpoint': 'v3/catalog/products/{product_id}/options/{option_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'}
+                        ]
+                    },
+                    {
+                        'command': 'options',
+                        'endpoint': 'v3/catalog/products/{product_id}/options',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True}
+                        ]
                     }
                 ]
             },
@@ -308,6 +388,15 @@ def main():
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
                     {'action': 'delete', 'method': 'DELETE'}
+                ]
+            },
+            {
+                'command': 'variants',
+                'endpoint': 'v3/catalog/variants',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'update', 'method': 'PUT', 'limit': 50}
                 ]
             },
             {
