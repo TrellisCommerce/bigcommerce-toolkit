@@ -265,7 +265,7 @@ def main():
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ],
                 'subcommands': [
                     {
@@ -274,7 +274,7 @@ def main():
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ],
                         'subcommands': [
                             {
@@ -283,7 +283,7 @@ def main():
                                 'actions': [
                                     {'action': 'get', 'method': 'GET'},
                                     {'action': 'update', 'method': 'PUT'},
-                                    {'action': 'delete', 'method': 'DELETE'}
+                                    {'action': 'delete', 'method': 'DELETE'},
                                 ]
                             },
                             {
@@ -312,7 +312,7 @@ def main():
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     },
                     {
@@ -330,7 +330,7 @@ def main():
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     },
                     {
@@ -348,7 +348,7 @@ def main():
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     },
                     {
@@ -366,7 +366,7 @@ def main():
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     },
                     {
@@ -374,7 +374,8 @@ def main():
                         'endpoint': 'v3/catalog/products/{product_id}/options',
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
-                            {'action': 'get-all', 'method': 'GET', 'allPages': True}
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
                         ]
                     }
                 ]
@@ -387,7 +388,7 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -396,7 +397,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
-                    {'action': 'update', 'method': 'PUT', 'limit': 50}
+                    {'action': 'upsert', 'method': 'PUT', 'limit': 50},
                 ]
             },
             {
@@ -405,7 +406,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -416,7 +417,7 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -428,7 +429,7 @@ def main():
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     },
                     {
@@ -447,7 +448,7 @@ def main():
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'create', 'method': 'POST', 'multipartParamter': 'image_file'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     }
                 ]
@@ -460,7 +461,7 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -473,7 +474,7 @@ def main():
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'create', 'method': 'POST'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     }
                 ]
@@ -486,7 +487,7 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -500,7 +501,7 @@ def main():
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'create', 'method': 'POST'},
                             {'action': 'update', 'method': 'PUT'},
-                            {'action': 'delete', 'method': 'DELETE'}
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     }
                 ]
@@ -512,7 +513,7 @@ def main():
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -521,7 +522,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -532,7 +533,7 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -542,7 +543,7 @@ def main():
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'upsert', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -551,7 +552,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -569,14 +570,14 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ],
                 'subcommands': [
                     {
                         'command': 'render',
                         'endpoint': 'v3/content/widget-templates/{uuid}/preview',
                         'actions': [
-                            {'action': 'create', 'method': 'POST'}
+                            {'action': 'create', 'method': 'POST'},
                         ]
                     }
                 ]
@@ -596,7 +597,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -614,7 +615,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -630,7 +631,7 @@ def main():
                 'command': 'regions',
                 'endpoint': 'v3/content/regions',
                 'actions': [
-                    {'action': 'get', 'method': 'GET'}
+                    {'action': 'get', 'method': 'GET'},
                 ]
             },
             {
@@ -641,7 +642,7 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'PUT'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
@@ -650,7 +651,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
-                    {'action': 'upload', 'method': 'POST'}
+                    {'action': 'upload', 'method': 'POST'},
                 ],
                 'subcommands': [
                     {
@@ -658,14 +659,14 @@ def main():
                         'endpoint': 'v3/themes/custom-templates/{version_uuid}',
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
-                            {'action': 'get-all', 'method': 'GET', 'allPages': True}
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
                         ]
                     },
                     {
                         'command': 'activate',
                         'endpoint': 'v3/themes/actions/activate',
                         'actions': [
-                            {'action': 'set', 'method': 'POST'}
+                            {'action': 'set', 'method': 'POST'},
                         ]
                     }
                 ]
@@ -675,7 +676,24 @@ def main():
                 'endpoint': 'v3/themes/{uuid}',
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'configurations',
+                        'endpoint': 'v3/themes/{uuid}/configurations',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                        ]
+                    },
+                    {
+                        'command': 'configuration',
+                        'endpoint': 'v3/themes/{uuid}/configurations/validate',
+                        'actions': [
+                            {'action': 'validate', 'method': 'POST'},
+                        ]
+                    }
                 ]
             },
             {
@@ -684,7 +702,7 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
-                    {'action': 'create', 'method': 'POST'}
+                    {'action': 'create', 'method': 'POST'},
                 ]
             },
             {
@@ -692,14 +710,14 @@ def main():
                 'endpoint': 'v3/channels/{channel_id}',
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
-                    {'action': 'update', 'method': 'PUT'}
+                    {'action': 'update', 'method': 'PUT'},
                 ],
                 'subcommands': [
                     {
                         'command': 'active-theme',
                         'endpoint': 'v3/channels/{channel_id}/active-theme',
                         'actions': [
-                            {'action': 'get', 'method': 'GET'}
+                            {'action': 'get', 'method': 'GET'},
                         ]
                     }
                 ]
@@ -709,14 +727,14 @@ def main():
                 'endpoint': 'v2/blog/posts',
                 'actions': [
                     {'action': 'get-all', 'method': 'GET'},
-                    {'action': 'create', 'method': 'POST'}
+                    {'action': 'create', 'method': 'POST'},
                 ],
                 'subcommands': [
                     {
                         'command': 'count',
                         'endpoint': 'v2/blog/posts/count',
                         'actions': [
-                            {'action': 'get', 'method': 'GET'}
+                            {'action': 'get', 'method': 'GET'},
                         ]
                     }
                 ]
@@ -727,16 +745,53 @@ def main():
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
-                    {'action': 'delete', 'method': 'DELETE'}
+                    {'action': 'delete', 'method': 'DELETE'},
                 ]
             },
             {
                 'command': 'blog-tags',
                 'endpoint': 'v2/blog/tags',
                 'actions': [
-                    {'action': 'get-all', 'method': 'GET'}
+                    {'action': 'get-all', 'method': 'GET'},
                 ]
-            }
+            },
+            {
+                'command': 'shipping-zone',
+                'endpoint': 'v2/shipping/zones/{id}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'method',
+                        'endpoint': 'v2/shipping/zones/{zone_id}/methods/{method_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
+                    },
+                    {
+                        'command': 'methods',
+                        'endpoint': 'v2/shipping/zones/{zone_id}/methods',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                        ]
+                    }
+                ]
+            },
+            {
+                'command': 'shipping-zones',
+                'endpoint': 'v2/shipping/zones',
+                'actions': [
+                    {'action': 'get-all', 'method': 'GET'},
+                    {'action': 'create', 'method': 'POST'},
+                ]
+            },
         ]
     }
     build_commands(commands_structure)
