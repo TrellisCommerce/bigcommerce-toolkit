@@ -148,7 +148,7 @@ def handle_request(config):
         'method': config.get('method'),
         'endpoint': config.get('endpoint'),
         'data': config.get('request_data') if config.get('method') in ['POST', 'PUT'] else None,
-        'params': config.get('request_data') if config.get('method') == 'GET' else None,
+        'params': config.get('request_data') if config.get('method')in ['GET', 'DELETE'] else None,
         'all_pages': config.get('all_pages', False),
         'store_hash': config.get('store_hash'),
         'auth_token': config.get('auth_token'),
@@ -470,8 +470,9 @@ def main():
                     {
                         'command': 'metafields',
                         'endpoint': 'v3/customers/{customer_id}/metafields',
-                         'actions': [
+                        'actions': [
                             {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
                             {'action': 'create', 'method': 'POST'},
                             {'action': 'update', 'method': 'PUT'},
                             {'action': 'delete', 'method': 'DELETE'},
@@ -488,6 +489,19 @@ def main():
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'update', 'method': 'PUT'},
                     {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'attributes',
+                        'endpoint': 'v3/customers/attributes',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
+                    }
                 ]
             },
             {
