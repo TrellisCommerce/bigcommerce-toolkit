@@ -34,9 +34,36 @@ def construct_request_data(args, unknown_args):
         data.update(additional_data)
     return data
 
+def format_placeholders(obj, values):
+    """
+    Recursively replace placeholders in all string values of a dict, list, or str.
+    """
+    if isinstance(obj, str):
+        try:
+            return obj.format(**values)
+        except KeyError:
+            return obj  # leave as-is if placeholder not provided
+    elif isinstance(obj, dict):
+        return {k: format_placeholders(v, values) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [format_placeholders(v, values) for v in obj]
+    else:
+        return obj
+
 def make_paginated_request(url, headers, params):
     """
     Retrieves all pages of data from an API endpoint that supports pagination.
+
+    Supports two pagination formats:
+
+    1) Page-based (Core BigCommerce):
+        meta.pagination.total_pages
+        meta.pagination.current_page
+
+    2) Offset-based (B2B Edition):
+        meta.pagination.totalCount
+        meta.pagination.offset
+        meta.pagination.limit
 
     :param url: The API endpoint URL.
     :param headers: HTTP headers to include in the request.
@@ -46,16 +73,48 @@ def make_paginated_request(url, headers, params):
     """
     results = []
     page = 1
+    offset = params.get('offset', 0) if params else 0
+    limit = params.get('limit', None) if params else None
+
     while True:
-        paginated_params = {**params, 'page': page} if params else {'page': page}
+        # Build request parameters depending on pagination mode
+        if limit is not None:
+            paginated_params = {**params, 'offset': offset} if params else {'offset': offset}
+        else:
+            paginated_params = {**params, 'page': page} if params else {'page': page}
+
         response = requests.get(url, headers=headers, params=paginated_params)
         if response.status_code != 200:
             return response.json()
+
         json_response = response.json()
         results.extend(json_response.get('data', []))
-        if page >= json_response.get('meta', {}).get('pagination', {}).get('total_pages', 0):
+
+        pagination = json_response.get('meta', {}).get('pagination', {})
+
+        # ----- Page-based mode -----
+        if 'total_pages' in pagination:
+            current_page = pagination.get('current_page', page)
+            total_pages = pagination.get('total_pages', current_page)
+            if current_page >= total_pages:
+                break
+            page += 1
+
+        # ----- Offset-based mode -----
+        elif 'totalCount' in pagination and 'limit' in pagination:
+            total = pagination.get('totalCount', 0)
+            limit = pagination.get('limit', limit or 0)
+            offset = pagination.get('offset', offset)
+
+            next_offset = offset + limit
+            if next_offset >= total:
+                break
+            offset = next_offset
+
+        # ----- No recognizable pagination -----
+        else:
             break
-        page += 1
+
     return {"data": results}
 
 def make_chunked_request(method, url, headers, data, limit):
@@ -98,13 +157,11 @@ def make_request(config):
     :param config: Dictionary containing the request configuration.
     :return: JSON response or error.
     """
-    url = f"https://api.bigcommerce.com/stores/{config.get('store_hash')}/{config.get('endpoint')}"
-    headers = {
-        'X-Auth-Token': config.get('auth_token'),
-        'Accept': 'application/json',
-        'Content-Type': 'application/json' if not config.get('files') else None
-    }
-    headers.update(config.get('headers', {}))  # Allow additional headers if needed
+    url = config.get('url')
+
+    headers = config.get('headers', {}).copy()
+    if config.get('files'):
+        headers.pop('Content-Type', None)
 
     if config.get('all_pages') and config.get('method') == 'GET':
         return make_paginated_request(url, headers, config.get('params', {}))
@@ -140,13 +197,14 @@ def handle_request(config):
         files = {config.get('multipart_parameter'): open(config.get('request_data').pop(config.get('multipart_parameter')), 'rb')}
 
     if config.get('verbose'):
-        print("Endpoint:", json.dumps(config.get('endpoint'), indent=4), file=sys.stderr)
+        print("URL:", json.dumps(config.get('url'), indent=4), file=sys.stderr)
         print("Request Data:", json.dumps(config.get('request_data'), indent=4), file=sys.stderr)
 
     # Build the request-specific config
     request_config = {
+        'url': config.get('url'),
         'method': config.get('method'),
-        'endpoint': config.get('endpoint'),
+        'headers': config.get('headers'),
         'data': config.get('request_data') if config.get('method') in ['POST', 'PUT'] else None,
         'params': config.get('request_data') if config.get('method')in ['GET', 'DELETE'] else None,
         'all_pages': config.get('all_pages', False),
@@ -188,8 +246,6 @@ def cli(ctx, store_hash, auth_token, verbose):
 def add_action_commands(command_group, command_dict):
     for action in command_dict.get('actions', []):
         def create_action_command(action):
-            endpoint_format = command_dict.get('endpoint', '')
-
             @command_group.command(name=action['action'], cls=UnknownArgumentsCommand, context_settings=dict(
                 ignore_unknown_options=True,
                 allow_extra_args=True,
@@ -197,20 +253,29 @@ def add_action_commands(command_group, command_dict):
             @click.option('--data', type=str, help='Request data as JSON object.')
             @click.pass_context
             @click.argument('unknown_args', nargs=-1, type=click.UNPROCESSED)
+
             def action_command(ctx, data, unknown_args, **kwargs):
                 ctx.obj['data'] = data
                 request_data = construct_request_data(ctx.obj, unknown_args)
 
                 # Directly handle the replacement of "-" with stdin content in kwargs
+                format_dict = {**ctx.obj, **kwargs}
                 for key, value in kwargs.items():
                     if value == "-":
-                        kwargs[key] = sys.stdin.read().strip()
+                        format_dict[key] = sys.stdin.read().strip()
 
-                if endpoint_format:
-                    endpoint = endpoint_format.format(**kwargs)
+                base_url = format_placeholders(command_dict.get('base_url', ''), format_dict)
+                endpoint = format_placeholders(command_dict.get('endpoint', ''), format_dict)
+                url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
+                if url:
+                    headers = {
+                        **command_dict.get('headers', {}),
+                        **command_dict.get('extra_headers', {}),
+                    }
                     config = {
-                        'endpoint': endpoint,
+                        'url': url,
                         'method': action['method'],
+                        'headers': format_placeholders(headers, format_dict),
                         'all_pages': action.get('allPages', False),
                         'multipart_parameter': action.get('multipartParameter', None),
                         'request_data': request_data,
@@ -241,22 +306,66 @@ def add_action_commands(command_group, command_dict):
             return action_command
         create_action_command(action)
 
-def add_subcommand_groups(command_group, command_dict):
-    for subcmd in command_dict.get('subcommands', []):
-        subcommand_group = click.Group(name=subcmd['command'], help=f"Manage {command_dict['command']} {subcmd['command']}")
-        command_group.add_command(subcommand_group)
-        add_subcommand_groups(subcommand_group, subcmd)
-        add_action_commands(subcommand_group, subcmd)
+def build_command_group(parent_group, cmd_config, defaults=None, parent_path=None):
+    """
+    Recursively build click command groups with actions and subcommands.
 
-def build_commands(structure):
-    for cmd in structure['commands']:
-        command_group = click.Group(name=cmd['command'], help=f"Manage {cmd['command']}")
-        cli.add_command(command_group)
-        add_action_commands(command_group, cmd)
-        add_subcommand_groups(command_group, cmd)
+    :param parent_group: The parent click.Group to attach this command to
+    :param cmd_config: Command config dictionary
+    :param defaults: Defaults from parent / global
+    :param parent_path: List of parent command names for help messages
+    """
+    parent_path = parent_path or []
+
+    # Merge defaults: parent < this command
+    merged_config = {
+        **(defaults or {}),
+        **cmd_config,
+    }
+
+    # Full command path for help
+    full_path = parent_path + [merged_config['command']]
+    help_msg = f"Manage {' '.join(full_path)}"
+
+    # Create click group for this command
+    group = click.Group(name=merged_config['command'], help=help_msg)
+    parent_group.add_command(group)
+
+    # Add actions for this command
+    add_action_commands(group, merged_config)
+
+    # Recursively add subcommands
+    for subcmd in merged_config.get('subcommands', []):
+        # Merge defaults with parent command values, letting subcmd override
+        subcmd_defaults = {
+            **defaults,
+            "base_url": cmd_config.get("base_url", defaults.get("base_url")),
+            "extra_headers": {
+                **defaults.get("extra_headers", {}),
+                **cmd_config.get("extra_headers", {})
+            }
+        }
+        build_command_group(group, subcmd, defaults=subcmd_defaults, parent_path=full_path)
+
+    return group
+
+def build_commands(commands_dict):
+    global_defaults = commands_dict.get('default', {})
+
+    # Build all top-level commands and subcommands
+    for cmd_config in commands_dict['commands']:
+        build_command_group(cli, cmd_config, defaults=global_defaults)
 
 def main():
     commands_structure = {
+        'default': {
+            'base_url': 'https://api.bigcommerce.com/stores/{store_hash}/',
+            'headers': {
+                'X-Auth-Token': '{auth_token}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        },
         'commands': [
             {
                 'command': 'product',
@@ -804,6 +913,42 @@ def main():
                 'actions': [
                     {'action': 'get-all', 'method': 'GET'},
                     {'action': 'create', 'method': 'POST'},
+                ]
+            },
+            {
+                'command': 'company',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/companies/{company_id}',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ]
+            },
+            {
+                'command': 'companies',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/companies',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'bulk',
+                        'endpoint': 'v3/io/companies/bulk',
+                        'actions': [
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT'},
+                        ],
+                    },
                 ]
             },
         ]
