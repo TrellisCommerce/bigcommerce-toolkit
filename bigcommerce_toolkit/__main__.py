@@ -926,6 +926,32 @@ def main():
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'update', 'method': 'PUT'},
                     {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'subsidiary',
+                        'endpoint': 'v3/io/companies/{company_id}/subsidiaries/{child_company_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ],
+                    },
+                    {
+                        'command': 'subsidiaries',
+                        'endpoint': 'v3/io/companies/{company_id}/subsidiaries',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                        ],
+                    },
+                    {
+                        'command': 'hierarchy',
+                        'endpoint': 'v3/io/companies/{company_id}/hierarchy',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                        ],
+                    },
                 ]
             },
             {
@@ -947,6 +973,85 @@ def main():
                         'actions': [
                             {'action': 'create', 'method': 'POST'},
                             {'action': 'update', 'method': 'PUT'},
+                        ],
+                    },
+                ]
+            },
+            {
+                'command': 'shopping-list',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/shopping-list/{shopping_list_id}',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'items',
+                        'endpoint': 'v3/io/shopping-list/{shopping_list_id}/items/{item_id}',
+                        'actions': [
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ],
+                    },
+                ]
+            },
+            {
+                'command': 'shopping-lists',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/shopping-list',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                ]
+            },
+            {
+                'command': 'user',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/users/{user_id}',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'by-customer-id',
+                        'endpoint': 'v3/io/users/customer/{customer_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                        ],
+                    },
+                ]
+            },
+            {
+                'command': 'users',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/users',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'bulk',
+                        'endpoint': 'v3/io/companies/bulk',
+                        'actions': [
+                            {'action': 'create', 'method': 'POST'},
                         ],
                     },
                 ]
