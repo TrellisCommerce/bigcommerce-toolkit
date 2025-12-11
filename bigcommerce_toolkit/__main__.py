@@ -1056,6 +1056,49 @@ def main():
                     },
                 ]
             },
+            {
+                'command': 'address',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/addresses/{address_id}',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ]
+            },
+            {
+                'command': 'addresses',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/addresses',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'bulk',
+                        'endpoint': 'v3/io/companies/bulk',
+                        'actions': [
+                            {'action': 'create', 'method': 'POST'},
+                        ],
+                    },
+                    {
+                        'command': 'extra-fields',
+                        'endpoint': 'v3/io/companies/extra-fields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                        ],
+                    },
+                ]
+            },
         ]
     }
     build_commands(commands_structure)
