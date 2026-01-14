@@ -65,57 +65,86 @@ def make_paginated_request(url, headers, params):
         meta.pagination.offset
         meta.pagination.limit
 
+    3) No-pagination metadata: loop until HTTP 204 No Content
+
     :param url: The API endpoint URL.
     :param headers: HTTP headers to include in the request.
     :param params: Query parameters to include in the request, excluding pagination parameters.
      :return: A dictionary containing all retrieved data under the key "data". If an error
              occurs during the request, the function returns the error response from the API.
     """
-    results = []
+def make_paginated_request(url, headers, params):
     page = 1
-    offset = params.get('offset', 0) if params else 0
-    limit = params.get('limit', None) if params else None
+    offset = 0
+    limit = params.get('limit') if params else None
+    mode = None  # 'page', 'offset', 'no-meta'
+
+    aggregated = None
 
     while True:
-        # Build request parameters depending on pagination mode
-        if limit is not None:
+        if mode == 'offset':
             paginated_params = {**params, 'offset': offset} if params else {'offset': offset}
         else:
             paginated_params = {**params, 'page': page} if params else {'page': page}
 
         response = requests.get(url, headers=headers, params=paginated_params)
+
+        # ----- 204 No Content -----
+        if response.status_code == 204:
+            break
+
         if response.status_code != 200:
             return response.json()
 
-        json_response = response.json()
-        results.extend(json_response.get('data', []))
+        payload = response.json()
 
-        pagination = json_response.get('meta', {}).get('pagination', {})
+        # ----- Array-shaped response (Orders) -----
+        if isinstance(payload, list):
+            if aggregated is None:
+                aggregated = []
+            if not payload:
+                break
+            aggregated.extend(payload)
+            pagination = {}
 
-        # ----- Page-based mode -----
-        if 'total_pages' in pagination:
+        # ----- Object response (Core API with .data) -----
+        else:
+            data = payload.get('data', [])
+            if aggregated is None:
+                # Initialize envelope but only keep .data
+                aggregated = {'data': []}
+            if not data:
+                break
+            aggregated['data'].extend(data)
+            pagination = payload.get('meta', {}).get('pagination', {})
+
+        # ----- Detect pagination mode once -----
+        if mode is None:
+            if 'total_pages' in pagination:
+                mode = 'page'
+            elif 'totalCount' in pagination and 'limit' in pagination:
+                mode = 'offset'
+            else:
+                mode = 'no-meta'
+
+        # ----- Advance pagination -----
+        if mode == 'page':
             current_page = pagination.get('current_page', page)
             total_pages = pagination.get('total_pages', current_page)
             if current_page >= total_pages:
                 break
             page += 1
 
-        # ----- Offset-based mode -----
-        elif 'totalCount' in pagination and 'limit' in pagination:
-            total = pagination.get('totalCount', 0)
+        elif mode == 'offset':
             limit = pagination.get('limit', limit or 0)
-            offset = pagination.get('offset', offset)
-
-            next_offset = offset + limit
-            if next_offset >= total:
+            offset = pagination.get('offset', offset) + limit
+            if offset >= pagination.get('totalCount', 0):
                 break
-            offset = next_offset
 
-        # ----- No recognizable pagination -----
-        else:
-            break
+        else:  # no-meta
+            page += 1
 
-    return {"data": results}
+    return aggregated
 
 def make_chunked_request(method, url, headers, data, limit):
     """
@@ -510,10 +539,78 @@ def main():
                 ]
             },
             {
+                'command': 'locations',
+                'endpoint': 'v3/inventory/locations',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                    {'action': 'update', 'method': 'PUT', 'limit': 50},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'metafield',
+                        'endpoint': 'v3/inventory/locations/{location_id}/metafields/{metafield_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
+                    },
+                    {
+                        'command': 'metafields',
+                        'endpoint': 'v3/inventory/locations/{location_id}/metafields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                        ]
+                    },
+                    {
+                        'command': 'inventory',
+                        'endpoint': 'v3/inventory/locations/{location_id}/items',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'update-settings', 'method': 'PUT'},
+                        ]
+                    }
+                ]
+            },
+            {
+                'command': 'inventory',
+                'subcommands': [
+                    {
+                        'command': 'absolute-adjustment',
+                        'endpoint': 'v3/inventory/adjustments/absolute',
+                        'actions': [
+                            {'action': 'update', 'method': 'PUT'},
+                        ]
+                    },
+                    {
+                        'command': 'relative-adjustment',
+                        'endpoint': 'v3/inventory/adjustments/relative',
+                        'actions': [
+                            {'action': 'update', 'method': 'POST'},
+                        ]
+                    },
+                    {
+                        'command': 'items',
+                        'endpoint': 'v3/inventory/items',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                        ]
+                    }
+                ]
+            },
+            {
                 'command': 'category-tree',
                 'endpoint': 'v3/catalog/trees/{tree_id}/categories',
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'update', 'method': 'PUT'},
                     {'action': 'delete', 'method': 'DELETE'},
                 ]
@@ -610,12 +707,46 @@ def main():
                             {'action': 'update', 'method': 'PUT'},
                             {'action': 'delete', 'method': 'DELETE'},
                         ]
+                    },
+                    {
+                        'command': 'addresses',
+                        'endpoint': 'v3/customers/addresses',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
                     }
+                ]
+            },
+            {
+                'command': 'customer-group',
+                'endpoint': 'v2/customer_groups/{customer_group_id}/metafields',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ]
+            },
+            {
+                'command': 'customer-groups',
+                'endpoint': 'v2/customer_groups',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
                 ]
             },
             {
                 'command': 'order',
                 'endpoint': 'v2/orders/{order_id}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'archive', 'method': 'DELETE'},
+                ],
                 'subcommands': [
                     {
                         'command': 'metafields',
@@ -637,6 +768,20 @@ def main():
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
                     {'action': 'delete', 'method': 'DELETE'},
+                ]
+            },
+            {
+                'command': 'order-status',
+                'endpoint': 'v2/order_statuses/{status_id}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'}
+                ]
+            },
+            {
+                'command': 'order-statuses',
+                'endpoint': 'v2/order_statuses',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'}
                 ]
             },
             {
@@ -1084,14 +1229,59 @@ def main():
                 'subcommands': [
                     {
                         'command': 'bulk',
-                        'endpoint': 'v3/io/companies/bulk',
+                        'endpoint': 'v3/io/addresses/bulk',
                         'actions': [
                             {'action': 'create', 'method': 'POST'},
                         ],
                     },
                     {
                         'command': 'extra-fields',
-                        'endpoint': 'v3/io/companies/extra-fields',
+                        'endpoint': 'v3/io/addresses/extra-fields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                        ],
+                    },
+                ]
+            },
+            {
+                'command': 'invoice',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/ip/invoices/{invoice_id}',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'download-pdf',
+                        'endpoint': 'v3/io/ip/invoices/{invoice_id}/extra-fields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                        ],
+                    },
+                ]
+            },
+            {
+                'command': 'invoices',
+                'base_url': 'https://api-b2b.bigcommerce.com/api/',
+                'endpoint': 'v3/io/ip/invoices',
+                'extra_headers': {
+                    'X-Store-Hash': '{store_hash}',
+                },
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'extra-fields',
+                        'endpoint': 'v3/io/ip/invoices/extra-fields',
                         'actions': [
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'get-all', 'method': 'GET', 'allPages': True},
