@@ -539,15 +539,7 @@ def main():
                 ]
             },
             {
-                'command': 'locations',
-                'endpoint': 'v3/inventory/locations',
-                'actions': [
-                    {'action': 'get', 'method': 'GET'},
-                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
-                    {'action': 'create', 'method': 'POST'},
-                    {'action': 'update', 'method': 'PUT', 'limit': 50},
-                    {'action': 'delete', 'method': 'DELETE'},
-                ],
+                'command': 'location',
                 'subcommands': [
                     {
                         'command': 'metafield',
@@ -574,6 +566,30 @@ def main():
                             {'action': 'get', 'method': 'GET'},
                             {'action': 'get-all', 'method': 'GET', 'allPages': True},
                             {'action': 'update-settings', 'method': 'PUT'},
+                        ]
+                    }
+                ]
+            },
+            {
+                'command': 'locations',
+                'endpoint': 'v3/inventory/locations',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                    {'action': 'create', 'method': 'POST'},
+                    {'action': 'update', 'method': 'PUT', 'limit': 50},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'metafields',
+                        'endpoint': 'v3/inventory/locations/metafields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT', 'limit': 50},
+                            {'action': 'delete', 'method': 'DELETE'},
                         ]
                     }
                 ]
@@ -878,7 +894,7 @@ def main():
                 ]
             },
             {
-                'command': 'placement',
+                'command': 'widget-placement',
                 'endpoint': 'v3/content/placements/{uuid}',
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
@@ -887,7 +903,7 @@ def main():
                 ]
             },
             {
-                'command': 'placements',
+                'command': 'widget-placements',
                 'endpoint': 'v3/content/placements',
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
@@ -896,8 +912,15 @@ def main():
                 ]
             },
             {
-                'command': 'regions',
+                'command': 'theme-regions',
                 'endpoint': 'v3/content/regions',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                ]
+            },
+            {
+                'command': 'page-widgets',
+                'endpoint': 'v3/content/page-widgets',
                 'actions': [
                     {'action': 'get', 'method': 'GET'},
                 ]
@@ -1061,6 +1084,22 @@ def main():
                 ]
             },
             {
+                'command': 'email-template',
+                'endpoint': 'v3/marketing/email-templates/{template_name}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ]
+            },
+            {
+                'command': 'email-templates',
+                'endpoint': 'v3/marketing/email-templates',
+                'actions': [
+                    {'action': 'get-all', 'method': 'GET'},
+                ]
+            },
+            {
                 'command': 'company',
                 'base_url': 'https://api-b2b.bigcommerce.com/api/',
                 'endpoint': 'v3/io/companies/{company_id}',
@@ -1074,10 +1113,16 @@ def main():
                 ],
                 'subcommands': [
                     {
+                        'command': 'parent',
+                        'endpoint': 'v3/io/companies/{company_id}/parent',
+                        'actions': [
+                            {'action': 'attach', 'method': 'POST'},
+                        ],
+                    },
+                    {
                         'command': 'subsidiary',
                         'endpoint': 'v3/io/companies/{company_id}/subsidiaries/{child_company_id}',
                         'actions': [
-                            {'action': 'get', 'method': 'GET'},
                             {'action': 'delete', 'method': 'DELETE'},
                         ],
                     },
@@ -1118,6 +1163,28 @@ def main():
                         'actions': [
                             {'action': 'create', 'method': 'POST'},
                             {'action': 'update', 'method': 'PUT'},
+                        ],
+                    },
+                    {
+                        'command': 'permissions',
+                        'endpoint': 'v3/io/companies/permissions',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ],
+                    },
+                    {
+                        'command': 'roles',
+                        'endpoint': 'v3/io/companies/roles',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'get-all', 'method': 'GET', 'allPages': True},
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
                         ],
                     },
                 ]
