@@ -227,6 +227,7 @@ def handle_request(config):
 
     if config.get('verbose'):
         print("URL:", json.dumps(config.get('url'), indent=4), file=sys.stderr)
+        print("Request Method:", json.dumps(config.get('method'), indent=4), file=sys.stderr)
         print("Request Data:", json.dumps(config.get('request_data'), indent=4), file=sys.stderr)
 
     # Build the request-specific config
@@ -753,6 +754,91 @@ def main():
                     {'action': 'get', 'method': 'GET'},
                     {'action': 'get-all', 'method': 'GET', 'allPages': True},
                     {'action': 'create', 'method': 'POST'},
+                ]
+            },
+            {
+                'command': 'cart',
+                'endpoint': 'v3/carts/{cart_id}',
+                'actions': [
+                    {'action': 'get', 'method': 'GET'},
+                    {'action': 'update', 'method': 'PUT'},
+                    {'action': 'delete', 'method': 'DELETE'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'item',
+                        'endpoint': 'v3/carts/{cart_id}/items/{item_id}',
+                        'actions': [
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
+                    },
+                    {
+                        'command': 'items',
+                        'endpoint': 'v3/carts/{cart_id}/items',
+                        'actions': [
+                            {'action': 'create', 'method': 'POST'},
+                        ]
+                    },
+                    {
+                        'command': 'metafield',
+                        'endpoint': 'v3/carts/{cart_id}/metafields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'create', 'method': 'POST'},
+                        ]
+                    },
+                    {
+                        'command': 'metafields',
+                        'endpoint': 'v3/carts/{cart_id}/metafields/{metafield_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
+                    },
+                    {
+                        'command': 'redirect-urls',
+                        'endpoint': 'v3/carts/{cart_id}/redirect_urls',
+                        'actions': [
+                            {'action': 'create', 'method': 'POST'},
+                        ]
+                    },
+                    {
+                        'command': 'settings',
+                        'endpoint': 'v3/carts/settings',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'update', 'method': 'PUT'},
+                        ]
+                    },
+                    {
+                        'command': 'channel-settings',
+                        'endpoint': 'v3/carts/settings/channels/{channel_id}',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'update', 'method': 'PUT'},
+                        ]
+                    },
+                ]
+            },
+            {
+                'command': 'carts',
+                'endpoint': 'v3/carts',
+                'actions': [
+                    {'action': 'create', 'method': 'POST'},
+                ],
+                'subcommands': [
+                    {
+                        'command': 'metafields',
+                        'endpoint': 'v3/carts/metafields',
+                        'actions': [
+                            {'action': 'get', 'method': 'GET'},
+                            {'action': 'create', 'method': 'POST'},
+                            {'action': 'update', 'method': 'PUT'},
+                            {'action': 'delete', 'method': 'DELETE'},
+                        ]
+                    }
                 ]
             },
             {
